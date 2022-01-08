@@ -1,7 +1,7 @@
 Constants.py
 __pycache__
 # dependencies
-/node_modules
+/app/efficient-frontier/node_modules
 /.pnp
 .pnp.js
 .png
