@@ -10,21 +10,26 @@ plt.style.use('seaborn-colorblind')
 class EfficientFrontier:
     #Constructor
     def __init__(self, stocks: list[str], startDate: dt.time, endDate: dt.time, riskFreeRate, personalWeights):
-        self.dailyPctChange = pdr.get_data_yahoo(stocks, startDate, endDate)['Close'].pct_change()
-        self.meanDailyReturns = self.dailyPctChange.mean()
-        self.covMatrix = self.dailyPctChange.cov()   
-        if riskFreeRate != None:
-            self.riskFreeRate = riskFreeRate
-        else:
-            self.riskFreeData = pdr.get_data_fred('GS10')
-            self.riskFreeRate = self.riskFreeData.iloc[-1]["GS10"]/100
-        if personalWeights != []:
-            self.personalPort = personalWeights
-        else:
-            self.personalPort = []
-        self.start = dt.datetime.strftime(startDate,"%Y-%m-%d")
-        self.end = dt.datetime.strftime(endDate,"%Y-%m-%d")
-        self.stocks = stocks
+        try:
+            self.dailyPctChange = pdr.get_data_yahoo(stocks, startDate, endDate)['Close'].pct_change()
+            self.meanDailyReturns = self.dailyPctChange.mean()
+            self.covMatrix = self.dailyPctChange.cov()   
+            if riskFreeRate != None:
+                self.riskFreeRate = riskFreeRate
+            else:
+                self.riskFreeData = pdr.get_data_fred('GS10')
+                self.riskFreeRate = self.riskFreeData.iloc[-1]["GS10"]/100
+            if personalWeights != []:
+                self.personalPort = personalWeights
+            else:
+                self.personalPort = []
+            self.start = dt.datetime.strftime(startDate,"%Y-%m-%d")
+            self.end = dt.datetime.strftime(endDate,"%Y-%m-%d")
+            self.stocks = stocks
+        except Exception as e:
+            print("here")
+            print(e)
+            
 
     #Public API Methods
     def generateFrontier(self, numSimulations: int):
@@ -87,7 +92,7 @@ class EfficientFrontier:
         if self.personalPort:
             plt.scatter(self.personalPort[0], self.personalPort[1], marker='x',color='g',s=100,alpha=.9, label='Your Portfolio')
         plt.legend()
-        plt.savefig("output")
+        plt.savefig("output",bbox_inches='tight')
 
     def __generateRiskReturn(self, numSimulations: int):
         self.__generateWeightings(numSimulations)
@@ -105,11 +110,11 @@ class EfficientFrontier:
             self.personalResults = [np.sqrt(np.dot(weights.T,np.dot(self.covMatrix, weights)))* np.sqrt(252), np.dot(weights, self.meanDailyReturns) * 252]
 
 
-stocks = ['AAPL','FB', 'C', 'DIS']
-end = dt.date.today()
-start = end - dt.timedelta(days=365)
-e = EfficientFrontier(stocks, start, end)
-print(e.riskFreeData)
+# stocks = ['AAPL','FB', 'C', 'DIS']
+# end = dt.date.today()
+# start = end - dt.timedelta(days=365)
+# e = EfficientFrontier(stocks, start, end)
+# print(e.riskFreeData)
 
 # # e.computePersonalRiskReturn(weights=[.4,.4,.1,.1], meanReturnOnStocks=[.2/100, -.5/100, .9/100, .001/100])
 # e.generateFrontier(10000)

@@ -24,9 +24,9 @@ def parseFields(stockStr, numSimStr, startStr, endStr, personalWeightsStr, riskF
     if personalWeightsStr != "":
         tmp = personalWeightsStr.split("+")
         for elm in tmp:
-            personalWeights.append(float(elm))
+            personalWeights.append(float(elm)/100)
     if riskFreeRateStr != "":
-        rfr = float(riskFreeRateStr)
+        rfr = float(riskFreeRateStr)/100
     e = EfficientFrontier(stocks,  start, end, rfr, personalWeights)
     e.generateFrontier(int(numSimStr))
     return e
