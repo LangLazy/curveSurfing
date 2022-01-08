@@ -27,7 +27,6 @@ function App() {
     }
   }
   const [fieldState, changeFieldState] = useState(stateObj)
-  const [errState, changeErrState] = useState("")
   const [errorState, changeErrorState] = useState(errorObj)
   const [graphDisplayed, changeGraphState] = useState(false)
   const [graphData, setGraphData] = useState([])
