@@ -4,12 +4,12 @@ __pycache__
 /app/efficient-frontier/node_modules
 /.pnp
 .pnp.js
-.png
+*.png
 # testing
 /coverage
 
 # production
-/build
+/app/efficient-frontier/build
 
 # misc
 .DS_Store
