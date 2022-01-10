@@ -39,7 +39,7 @@ function App() {
     if (! (errorState["textError"]["startDate"] || errorState["textError"]["rfr"]||errorState["textError"]["endDate"] ||errorState["textError"]["numberPortfolios"] || errorState["textError"]["stcks"])) {
       const stockString1 = fieldState["stocks"].replaceAll(",", "+")
       const stockString = stockString1.replaceAll(" ", "")
-      const apiEndPoint = "http://efficientfrontier.pythonanywhere.com/" + stockString + "/" + fieldState["numberPortfolios"] + "/" + fieldState["startDate"] + "/" + fieldState["endDate"]+"/r/"+fieldState["riskfreeRate"]
+      const apiEndPoint = "https://efficientfrontier.pythonanywhere.com/" + stockString + "/" + fieldState["numberPortfolios"] + "/" + fieldState["startDate"] + "/" + fieldState["endDate"]+"/r/"+fieldState["riskfreeRate"]
       getData(apiEndPoint)
     }
     else{
