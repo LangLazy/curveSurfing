@@ -9,7 +9,7 @@ function App() {
     numberPortfolios: "10000",
     startDate: "2020-12-28",
     endDate: "2021-12-28",
-    riskfreeRate: "",
+    riskfreeRate: "1.767",
     personalPort: {
       return: "0",
       volatility: "0",
@@ -23,7 +23,8 @@ function App() {
       startDate: false,
       endDate: false,
       numberPortfolios: false,
-      stcks: false
+      stcks: false,
+      rfr: false
     }
   }
   const [fieldState, changeFieldState] = useState(stateObj)
@@ -33,10 +34,10 @@ function App() {
   const onSubmit = (e) => {
     e.preventDefault();
     validateInputs()
-    if (! (errorState["textError"]["startDate"] || errorState["textError"]["endDate"] ||errorState["textError"]["numberPortfolios"] || errorState["textError"]["stcks"])) {
+    if (! (errorState["textError"]["startDate"] || errorState["textError"]["rfr"]||errorState["textError"]["endDate"] ||errorState["textError"]["numberPortfolios"] || errorState["textError"]["stcks"])) {
       const stockString1 = fieldState["stocks"].replaceAll(",", "+")
       const stockString = stockString1.replaceAll(" ", "")
-      const apiEndPoint = "http://localhost:5000/" + stockString + "/" + fieldState["numberPortfolios"] + "/" + fieldState["startDate"] + "/" + fieldState["endDate"]
+      const apiEndPoint = "http://efficientfrontier.pythonanywhere.com/" + stockString + "/" + fieldState["numberPortfolios"] + "/" + fieldState["startDate"] + "/" + fieldState["endDate"]+"/r/"+fieldState["riskfreeRate"]
       console.log(apiEndPoint)
       getData(apiEndPoint)
     }
@@ -53,7 +54,8 @@ function App() {
         startDate: false,
         endDate: false,
         numberPortfolios: false,
-        stcks: false
+        stcks: false,
+        rfr: false
       }
     }
     const oneYear = (1000 * 3600 * 24)
@@ -90,32 +92,11 @@ function App() {
       newErrorState["errorMessage"].push("Ensure that at least 2 unique stocks have been entered seperated by only commas")
       newErrorState["textError"]["stcks"] = true
     }
+    const tmpRfr = fieldState["riskfreeRate"].replaceAll("%","")
+    if (isNaN(tmpRfr)){
+      newErrorState["errorMessage"].push("Please enter a valid risk free rate (%)")
+    }
     changeErrorState(newErrorState)
-    // if (fieldState["riskfreeRate"] !== "" && isNaN(fieldState["riskfreeRate"])) {
-    //   changeErrState("Ensure a valid risk free rate (%) is entered")
-    //   return false
-    // }
-    // if (fieldState["personalPort"]["stockWeights"] !== "") {
-    //   const wts = fieldState["personalPort"]["stockWeights"].split(",")
-    //   if (wts.len !== stcks.length) {
-    //     changeErrState("Ensure the amount of weights entered in the comma seperated list matches the number of stocks entered")
-    //     return false
-    //   }
-    //   var sum = 0.0
-    //   for (const val of wts) {
-    //     if (isNaN(val)) {
-    //       changeErrState("Ensure all weights entered (%) are valid")
-    //       return false
-    //     }
-    //     else {
-    //       sum = sum + Number(val)
-    //       if (sum > 100.00) {
-    //         changeErrState("Ensure the sum of the weights entered equals to 100%")
-    //         return false
-    //       }
-    //     }
-    //   }
-    // }
   }
   const getData = async (apiEndPoint) => {
     console.log("here")
@@ -167,7 +148,7 @@ function App() {
             <Grid item>
               <div>
                 {graphDisplayed
-                  ? <img src={graphData} alt="Logo" height="630" width="1120"></img>
+                  ? <img src={graphData} alt="Logo" height="540" width="960"></img>
                   : <div></div>
                 }
               </div>
@@ -192,6 +173,13 @@ function App() {
                   label="# Simulations/Portfolios"
                   name="numberPortfolios" 
                   {...(errorState["textError"]["numberPortfolios"] && {error:true})}
+                  />
+                  <TextField onChange={onType}
+                  
+                  value={fieldState["riskfreeRate"]}
+                  label="Risk Free Rate for Period (%)"
+                  name="riskfreeRate" 
+                  {...(errorState["textError"]["rfr"] && {error:true})}
                   />
                 <TextField onChange={onType}
                   value={fieldState["startDate"]}
@@ -221,6 +209,7 @@ function App() {
                   name="stocks" 
                   {...(errorState["textError"]["stcks"] && {error:true})}
                   />
+
               </Grid>
               <Grid item textAlign='center'
                 sx={{
