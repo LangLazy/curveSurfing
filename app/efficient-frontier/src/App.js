@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import Axios from 'axios'
-import { ThemeProvider, createTheme, Typography, Grid, Button, TextField } from '@mui/material';
+import { ThemeProvider, createTheme, Typography, Grid, TextField } from '@mui/material';
+import LoadingButton from '@material-ui/lab/LoadingButton';
+
 import Alert from '@mui/material/Alert';
-//https://www.youtube.com/watch?v=5jbdkOlf4cY
 function App() {
   const stateObj = {
     stocks: "AAPL,DIS,FB,C",
@@ -30,6 +31,7 @@ function App() {
   const [fieldState, changeFieldState] = useState(stateObj)
   const [errorState, changeErrorState] = useState(errorObj)
   const [graphDisplayed, changeGraphState] = useState(false)
+  const [loadingState, changeLoadingState] = useState(false)
   const [graphData, setGraphData] = useState([])
   const onSubmit = (e) => {
     e.preventDefault();
@@ -38,11 +40,10 @@ function App() {
       const stockString1 = fieldState["stocks"].replaceAll(",", "+")
       const stockString = stockString1.replaceAll(" ", "")
       const apiEndPoint = "http://efficientfrontier.pythonanywhere.com/" + stockString + "/" + fieldState["numberPortfolios"] + "/" + fieldState["startDate"] + "/" + fieldState["endDate"]+"/r/"+fieldState["riskfreeRate"]
-      console.log(apiEndPoint)
       getData(apiEndPoint)
     }
     else{
-      console.log("error encountered")
+      console.log("Unexpected Error Has Occoured")
     }
   }
 
@@ -99,17 +100,15 @@ function App() {
     changeErrorState(newErrorState)
   }
   const getData = async (apiEndPoint) => {
-    console.log("here")
+    changeLoadingState(true)
     const data = await Axios.get(apiEndPoint)
-    console.log(data)
     changeGraphState(true)
-    console.log(data["data"]["img"])
     setGraphData(data["data"]["img"])
+    changeLoadingState(false)
   }
 
   const onType = (e) => {
     const { name, value } = e.target
-    console.log(name, value)
     changeFieldState({
       ...fieldState,
       [name]: value
@@ -143,8 +142,7 @@ function App() {
           </Typography>
         </Grid>
         <Grid item >
-          <Grid container container direction="column" alignItems="center" justify="center">
-
+          <Grid container direction="column" alignItems="center" justify="center">
             <Grid item>
               <div>
                 {graphDisplayed
@@ -216,17 +214,11 @@ function App() {
                   '& .MuiButton-root': { m: 2, fontSize: '15px' },
                 }}
               >
-                <Button type='submit' variant='outlined' color='secondary'>
+                <LoadingButton loading={loadingState} type='submit' variant='outlined' color='secondary'>
                   Generate Frontier
-                </Button>
+                </LoadingButton>
               </Grid>
               {errorState.errorMessage.map((msg)=>(<Alert severity="error">{msg}</Alert>))}
-              {/* <Grid item>
-                {errState === ""
-                  ?  <div></div>
-                  : <Alert severity="error">{errState}</Alert>
-                }                
-              </Grid> */}
             </Grid>
           </Grid>
         </Grid>
