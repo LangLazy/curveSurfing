@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Axios from 'axios'
 import { ThemeProvider, createTheme, Typography, Grid, TextField, Link } from '@mui/material';
 import LoadingButton from '@material-ui/lab/LoadingButton';
@@ -29,24 +29,27 @@ function App() {
     }
   }
   const [fieldState, changeFieldState] = useState(stateObj)
-  const [errorState, changeErrorState] = useState(errorObj)
+  const errorState = useRef(errorObj)
   const [graphDisplayed, changeGraphState] = useState(false)
   const [loadingState, changeLoadingState] = useState(false)
   const [graphData, setGraphData] = useState([])
+  const [warningClosed, setWarning] = useState(false)
+  const [errorStatus, setStatus] = useState(false)
   const onSubmit = (e) => {
     e.preventDefault();
     validateInputs()
-    if (! (errorState["textError"]["startDate"] || errorState["textError"]["rfr"]||errorState["textError"]["endDate"] ||errorState["textError"]["numberPortfolios"] || errorState["textError"]["stcks"])) {
+    if (! (errorState.current["textError"]["startDate"] || errorState.current["textError"]["rfr"]||errorState.current["textError"]["endDate"] ||errorState.current["textError"]["numberPortfolios"] || errorState.current["textError"]["stcks"])) {
+      setStatus(false)
       const stockString1 = fieldState["stocks"].replaceAll(",", "+")
       const stockString = stockString1.replaceAll(" ", "")
       const apiEndPoint = "https://efficientfrontier.pythonanywhere.com/" + stockString + "/" + fieldState["numberPortfolios"] + "/" + fieldState["startDate"] + "/" + fieldState["endDate"]+"/r/"+fieldState["riskfreeRate"]
       getData(apiEndPoint)
+      
     }
     else{
-      console.log("Unexpected Error Has Occoured")
+      setStatus(true)
     }
   }
-
   const validateInputs = () => {
     var newErrorState = {
       errorState: false,
@@ -67,8 +70,8 @@ function App() {
       newErrorState["errorMessage"].push("Ensure a valid natural number (>= 100) is entered for the number of simulated portfolios")
       newErrorState["textError"]["numberPortfolios"] = true
     }
-    else if (parseInt(fieldState["numberPortfolios"]) < 100) {
-      newErrorState["errorMessage"].push("Ensure a valid natural number (>= 100) is entered for the number of simulated portfolios")
+    else if (parseInt(fieldState["numberPortfolios"]) < 100 || parseInt(fieldState["numberPortfolios"]) > 100000 ) {
+      newErrorState["errorMessage"].push("Ensure a valid natural number (100 <= x <= 100000) is entered for the number of simulated portfolios")
       newErrorState["textError"]["numberPortfolios"] = true
     }
     else if (fieldState["numberPortfolios"].indexOf('.') !== -1) {
@@ -97,10 +100,11 @@ function App() {
     if (isNaN(tmpRfr)){
       newErrorState["errorMessage"].push("Please enter a valid risk free rate (%)")
     }
-    changeErrorState(newErrorState)
+    errorState.current = newErrorState
   }
   const getData = async (apiEndPoint) => {
     changeLoadingState(true)
+    setWarning(true)
     const data = await Axios.get(apiEndPoint)
     changeGraphState(true)
     setGraphData(data["data"]["img"])
@@ -136,7 +140,7 @@ function App() {
         style={{ minHeight: '100vh' }}
 
       >
-        <Grid item sx={{ m: 5 }}>
+        <Grid item sx={{ m: 4.1 }}>
           <Typography variant="h4" color="black">
             Equity Efficient Frontier Generator
           </Typography>
@@ -153,7 +157,6 @@ function App() {
             </Grid>
             <Grid
               item
-              // style={{ backgroundColor: "red" }}
               component="form"
               onSubmit={onSubmit}
               noValidate
@@ -170,28 +173,28 @@ function App() {
                   value={fieldState["numberPortfolios"]}
                   label="# Simulations/Portfolios"
                   name="numberPortfolios" 
-                  {...(errorState["textError"]["numberPortfolios"] && {error:true})}
+                  {...(errorState.current["textError"]["numberPortfolios"] && {error:true})}
                   />
                   <TextField onChange={onType}
                   
                   value={fieldState["riskfreeRate"]}
                   label="Risk Free Rate for Period (%)"
                   name="riskfreeRate" 
-                  {...(errorState["textError"]["rfr"] && {error:true})}
+                  {...(errorState.current["textError"]["rfr"] && {error:true})}
                   />
                 <TextField onChange={onType}
                   value={fieldState["startDate"]}
                   type="date"
                   label="Equity Acquisition Date"
                   name="startDate" 
-                  {...(errorState["textError"]["startDate"] && {error:true})}
+                  {...(errorState.current["textError"]["startDate"] && {error:true})}
                   />
                 <TextField onChange={onType}
                   value={fieldState["endDate"]}
                   type="date"
                   label="Simmulation End Date"
                   name="endDate" 
-                  {...(errorState["textError"]["endDate"] && {error:true})}
+                  {...(errorState.current["textError"]["endDate"] && {error:true})}
                   />
               </Grid>
               <Grid
@@ -205,7 +208,7 @@ function App() {
                   value={fieldState["stocks"]}
                   label="NYSE/NASDAQ Equities"
                   name="stocks" 
-                  {...(errorState["textError"]["stcks"] && {error:true})}
+                  {...(errorState.current["textError"]["stcks"] && {error:true})}
                   />
 
               </Grid>
@@ -214,11 +217,18 @@ function App() {
                   '& .MuiButton-root': { m: 2, fontSize: '15px' },
                 }}
               >
+                {! warningClosed 
+                ? <Alert sx={{ m: .5 }} severity="info" onClose={() => {setWarning(true)}}>This App Requires JavaScript to run correctly</Alert>
+                : <div></div>}
+                {! loadingState 
+                ? <div></div>
+                : <Alert severity="success">Request sent! The larger the # of Simulations, the longer it might take, so hold on!</Alert>}
+                {errorState.current.errorMessage.map((msg)=>(<Alert sx={{ m: .5 }}severity="error">{msg}</Alert>))}
                 <LoadingButton loading={loadingState} type='submit' variant='outlined' color='secondary'>
                   Generate Frontier
                 </LoadingButton>
               </Grid>
-              {errorState.errorMessage.map((msg)=>(<Alert severity="error">{msg}</Alert>))}
+              
             </Grid>
           </Grid>
         </Grid>
