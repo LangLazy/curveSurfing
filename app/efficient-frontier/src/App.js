@@ -6,7 +6,7 @@ import LoadingButton from '@material-ui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 function App() {
   const stateObj = {
-    stocks: "AAPL,DIS,FB,C",
+    stocks: "AAPL,DIS,C",
     numberPortfolios: "10000",
     startDate: "2020-12-28",
     endDate: "2021-12-28",
