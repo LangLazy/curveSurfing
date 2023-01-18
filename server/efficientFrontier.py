@@ -5,15 +5,17 @@ import json
 import datetime as dt
 from imagekitio import ImageKit
 import Constants
+import yfinance as yf
+yf.pdr_override()
 
 plt.style.use('seaborn-colorblind')  
 class EfficientFrontier:
     #Constructor
     def __init__(self, stocks: list[str], startDate: dt.time, endDate: dt.time, riskFreeRate, personalWeights):
         try:
-            self.dailyPctChange = pdr.get_data_yahoo(stocks, startDate, endDate)['Close'].pct_change()
+            self.dailyPctChange = yf.download(stocks, startDate, endDate)['Close'].pct_change()
             self.meanDailyReturns = self.dailyPctChange.mean()
-            self.covMatrix = self.dailyPctChange.cov()   
+            self.covMatrix = self.dailyPctChange.cov()
             if riskFreeRate != None:
                 self.riskFreeRate = riskFreeRate
             else:
@@ -27,8 +29,7 @@ class EfficientFrontier:
             self.end = dt.datetime.strftime(endDate,"%Y-%m-%d")
             self.stocks = stocks
         except Exception as e:
-            print("here")
-            print(e)
+            print("Exception: ", e)
             
 
     #Public API Methods
