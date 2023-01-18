@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, make_response, jsonify
 import datetime as dt
 from efficientFrontier import EfficientFrontier
 from flask_cors import CORS
@@ -13,7 +13,12 @@ cors = CORS(app)
 def index(stocks, numSims, start, end, personalWeights, riskFreeRate):
     e = parseFields(stocks, numSims, start, end, personalWeights, riskFreeRate)
     obj = e.frontierToJson()
-    return obj
+    response = make_response(
+        obj,
+        200,
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 def parseFields(stockStr, numSimStr, startStr, endStr, personalWeightsStr, riskFreeRateStr) -> EfficientFrontier:
     stocks = stockStr.split("+")
